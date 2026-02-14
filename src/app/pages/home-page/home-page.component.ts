@@ -1,12 +1,12 @@
-import {Component, inject, OnInit} from '@angular/core';
-import {OidcSecurityService} from "angular-auth-oidc-client";
-import {Product} from "../../model/product";
-import {ProductService} from "../../services/product/product.service";
-import {AsyncPipe, JsonPipe} from "@angular/common";
-import {Router} from "@angular/router";
-import {Order} from "../../model/order";
-import {FormsModule} from "@angular/forms";
-import {OrderService} from "../../services/order/order.service";
+import { Component, inject, OnInit } from '@angular/core';
+import { OidcSecurityService } from "angular-auth-oidc-client";
+import { Product } from "../../model/product";
+import { ProductService } from "../../services/product/product.service";
+import { AsyncPipe, JsonPipe } from "@angular/common";
+import { Router } from "@angular/router";
+import { Order } from "../../model/order";
+import { FormsModule } from "@angular/forms";
+import { OrderService } from "../../services/order/order.service";
 
 @Component({
   selector: 'app-homepage',
@@ -32,13 +32,25 @@ export class HomePageComponent implements OnInit {
 
   ngOnInit(): void {
     this.oidcSecurityService.isAuthenticated$.subscribe(
-      ({isAuthenticated}) => {
+      ({ isAuthenticated }) => {
         this.isAuthenticated = isAuthenticated;
         this.productService.getProducts()
           .pipe()
-          .subscribe(product => {
-            this.products = product;
-          })
+          .subscribe({
+            next: (products) => {
+              this.products = products;
+              console.log('Productos cargados:', products);
+            },
+            error: (err) => {
+              console.error('Error al cargar productos:', err);
+              console.log('Status:', err.status);          
+              console.log('Status Text:', err.statusText);
+              console.log('Mensaje del servidor:', err.error); 
+            },
+            complete: () => {
+              console.log('Consulta de productos completada');
+            }
+          });
       }
     )
   }
@@ -56,7 +68,7 @@ export class HomePageComponent implements OnInit {
         lastName: result.userData.lastName
       };
 
-      if(!quantity) {
+      if (!quantity) {
         this.orderFailed = true;
         this.orderSuccess = false;
         this.quantityIsNull = true;
